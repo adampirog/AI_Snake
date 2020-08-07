@@ -89,21 +89,29 @@ class Snake():
         self.update_position(window)
              
     def right(self):
+        if(self.x_move !=0 and self.y_move == 0):
+            return
         self.x_move = VEL
         self.y_move = 0
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
         
     def left(self):
+        if(self.x_move  !=0 and self.y_move == 0):
+            return
         self.x_move = -VEL
         self.y_move = 0
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
         
     def up(self):
+        if(self.x_move == 0 and self.y_move  !=0):
+            return
         self.x_move = 0
         self.y_move = -VEL
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
     
     def down(self):
+        if(self.x_move == 0 and self.y_move  !=0):
+            return
         self.x_move = 0
         self.y_move = VEL
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
