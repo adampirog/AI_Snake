@@ -1,6 +1,6 @@
 import pygame
 from scipy.spatial import distance
-import random
+
 
 WIDTH = 600
 HEIGHT = 600
@@ -58,7 +58,7 @@ class Cube:
     def move(self, x_move, y_move):
         self.x_move = x_move
         self.y_move = y_move
-        
+
             
 class Snake():
     
@@ -70,13 +70,24 @@ class Snake():
         
         self.body = [Cube(x, y, 0, 0)]
         self.turns = []
-        self.snacks = []
-        
-        self.spawn_snack()
+  
+    def move(self, window):
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_LEFT]:
+            self.left()
+
+        if keys[pygame.K_RIGHT]:
+            self.right()
             
-    def spawn_snack(self):
-        self.snacks.append(Snack(random.randint(0, WIDTH - 50), random.randint(0, HEIGHT - 50)))
-    
+        if keys[pygame.K_UP]:
+            self.up()
+            
+        if keys[pygame.K_DOWN]:
+            self.down()
+
+        self.update_position(window)
+             
     def right(self):
         self.x_move = VEL
         self.y_move = 0
@@ -102,14 +113,6 @@ class Snake():
         self.x += self.x_move
         self.y += self.y_move
         
-        # snack eating
-        #for snack in list(self.snacks):
-            #snack.draw(window)
-            #if(collision(self, snack, 15)):
-                #self.snacks.remove(snack)
-                #self.add_cube()
-                #self.spawn_snack()
-        
         for cube in self.body:
             cube.update_position()
             cube.draw(window)
@@ -122,7 +125,6 @@ class Snake():
 
         if(self.x < 0):
             self.x = WIDTH
-            self.add_cube()
         elif(self.x > WIDTH):
             self.x = 0
 
@@ -131,38 +133,21 @@ class Snake():
         elif(self.y > HEIGHT):
             self.y = 0
             
-    def move(self, window):
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_LEFT]:
-            self.left()
-
-        if keys[pygame.K_RIGHT]:
-            self.right()
-            
-        if keys[pygame.K_UP]:
-            self.up()
-            
-        if keys[pygame.K_DOWN]:
-            self.down()
-
-        self.update_position(window)
-
     def add_cube(self):
         
         tail = self.body[-1]
         
         if(tail.x_move == 0):
             if(tail.y_move > 0):
-                self.body.append(Cube(tail.x, (tail.y) - SIDE - 2, tail.x_move, tail.y_move))     
+                self.body.append(Cube(tail.x, (tail.y) - SIDE - 1, tail.x_move, tail.y_move))     
             else:
-                self.body.append(Cube(tail.x, (tail.y) + SIDE + 2, tail.x_move, tail.y_move))  
+                self.body.append(Cube(tail.x, (tail.y) + SIDE + 1, tail.x_move, tail.y_move))  
 
         elif(tail.y_move == 0):
             if(tail.x_move > 0):
-                self.body.append(Cube((tail.x) - SIDE - 2, tail.y, tail.x_move, tail.y_move))
+                self.body.append(Cube((tail.x) - SIDE - 1, tail.y, tail.x_move, tail.y_move))
             else:
-                self.body.append(Cube((tail.x) + SIDE + 2, tail.y, tail.x_move, tail.y_move))
+                self.body.append(Cube((tail.x) + SIDE + 1, tail.y, tail.x_move, tail.y_move))
                 
         tail.isLast = False
 
@@ -174,10 +159,6 @@ class Turn:
         
         self.x_move = x_move
         self.y_move = y_move
-        
-    def __eq__(self, other):
-        if collision(self, other, 0):
-            return True
 
 
 class Snack:
