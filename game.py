@@ -37,7 +37,7 @@ def main():
                 player.add_cube()
                 spawn_snack(snacks)
      
-        player.move(window)
+        end = player.move(window)
         pygame.display.update()
 
     pygame.quit()

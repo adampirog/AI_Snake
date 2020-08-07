@@ -33,9 +33,7 @@ class Cube:
         
         self.movX = 0
         self.movY = 0
-        
-        self.isLast = True
-        
+              
     def draw(self, window):
         pygame.draw.rect(window, self.color, (self.x, self.y, SIDE, SIDE)) 
     
@@ -89,28 +87,28 @@ class Snake():
         self.update_position(window)
              
     def right(self):
-        if(self.x_move !=0 and self.y_move == 0):
+        if(self.x_move != 0 and self.y_move == 0):
             return
         self.x_move = VEL
         self.y_move = 0
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
         
     def left(self):
-        if(self.x_move  !=0 and self.y_move == 0):
+        if(self.x_move != 0 and self.y_move == 0):
             return
         self.x_move = -VEL
         self.y_move = 0
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
         
     def up(self):
-        if(self.x_move == 0 and self.y_move  !=0):
+        if(self.x_move == 0 and self.y_move != 0):
             return
         self.x_move = 0
         self.y_move = -VEL
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
     
     def down(self):
-        if(self.x_move == 0 and self.y_move  !=0):
+        if(self.x_move == 0 and self.y_move != 0):
             return
         self.x_move = 0
         self.y_move = VEL
@@ -121,14 +119,17 @@ class Snake():
         self.x += self.x_move
         self.y += self.y_move
         
-        for cube in self.body:
+        for i, cube in enumerate(self.body):
             cube.update_position()
             cube.draw(window)
+            
+            if(collision(self, cube, 16) and i != 0 and i != 1):
+                return True
 
             for turn in list(self.turns):
                 if collision(turn, cube):
                     cube.move(turn.x_move, turn.y_move)
-                    if(cube.isLast):
+                    if(i == len(self.body) - 1):
                         self.turns.remove(turn)
 
         if(self.x < 0):
@@ -140,6 +141,8 @@ class Snake():
             self.y = HEIGHT
         elif(self.y > HEIGHT):
             self.y = 0
+
+        return False
             
     def add_cube(self):
         
@@ -157,8 +160,6 @@ class Snake():
             else:
                 self.body.append(Cube((tail.x) + SIDE + 1, tail.y, tail.x_move, tail.y_move))
                 
-        tail.isLast = False
-
 
 class Turn:
     def __init__(self, x, y, x_move, y_move):
