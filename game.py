@@ -1,10 +1,13 @@
 import pygame 
 from classes import Snake, Snack, collision
 import random
+from datetime import datetime
 
 WIDTH = 600
 HEIGHT = 600
 SCORE = 0
+
+ENGINE = False
 
 
 def spawn_snack():
@@ -14,6 +17,16 @@ def spawn_snack():
 def draw_score(window, font):
     score_label = font.render("Score: " + str(SCORE), 1, (255, 255, 255))
     window.blit(score_label, (WIDTH - score_label.get_width() - 15, 10))
+
+
+def save_score(filename):
+    if(SCORE > 0):
+        with open(filename, 'a') as file:
+            file.write("\n" + datetime.now().strftime("%d-%m-%Y %H:%M:%S") + ",   SCORE: " + str(SCORE))
+            if(ENGINE):
+                file.write(",    ENGINE")
+            else:
+                file.write(",    HUMAN")
 
 
 def game_over(window, font):
@@ -55,6 +68,7 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                save_score('scoreboard')
                 run = False
                 pygame.quit()
                 quit()
@@ -76,6 +90,7 @@ def main():
         draw_score(window, font)
         pygame.display.update()
 
+    save_score('scoreboard')
     game_over(window, font)
     pygame.quit()
     quit()

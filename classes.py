@@ -114,16 +114,16 @@ class Snake():
     def move(self, window):
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_a] or keys[pygame.K_h]:
             self.left()
 
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d] or keys[pygame.K_l]:
             self.right()
             
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_k]:
             self.up()
             
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_j]:
             self.down()
 
         return self.update_position(window)
