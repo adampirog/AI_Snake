@@ -1,5 +1,6 @@
 import pygame
 from scipy.spatial import distance
+from time import time
 
 
 WIDTH = 600
@@ -20,6 +21,39 @@ def collision(cube1, cube2, tollerance=0):
     if(dist <= tollerance):
         return True
     return False
+
+
+# class to set a minimum time interval between function calls
+class Lock:
+    def __init__(self, time_interval):
+        self.time_interval = time_interval
+        self.start_time = 0
+        
+    def lock(self):
+        self.start_time = time()
+        
+    def isLocked(self):
+        if((time() - self.start_time) >= self.time_interval):
+            return False
+        else:
+            return True
+
+
+# decorator to make a function secure with a Lock class
+def secure_function(lock):
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            result = None
+            if(not lock.isLocked()):
+                result = function(*args, **kwargs)
+                lock.lock()
+            return result
+        return wrapper
+    return decorator
+
+
+# global key lock
+GKL = Lock(0.12)
 
 
 class Cube:
@@ -63,6 +97,7 @@ class Snake():
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        
         self.x_move = 0
         self.y_move = 0
         
@@ -86,6 +121,7 @@ class Snake():
 
         self.update_position(window)
              
+    @secure_function(GKL)
     def right(self):
         if(self.x_move != 0 and self.y_move == 0):
             return
@@ -93,13 +129,15 @@ class Snake():
         self.y_move = 0
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
         
+    @secure_function(GKL)
     def left(self):
         if(self.x_move != 0 and self.y_move == 0):
             return
         self.x_move = -VEL
         self.y_move = 0
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
-        
+       
+    @secure_function(GKL)    
     def up(self):
         if(self.x_move == 0 and self.y_move != 0):
             return
@@ -107,13 +145,14 @@ class Snake():
         self.y_move = -VEL
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
     
+    @secure_function(GKL)
     def down(self):
         if(self.x_move == 0 and self.y_move != 0):
             return
         self.x_move = 0
         self.y_move = VEL
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
-        
+    
     def update_position(self, window):
         
         self.x += self.x_move
