@@ -70,7 +70,14 @@ class Cube:
               
     def draw(self, window):
         pygame.draw.rect(window, self.color, (self.x, self.y, SIDE, SIDE)) 
-    
+        
+    def draw_head(self, window):
+        eye_color = (0, 0, 255)
+        pygame.draw.rect(window, self.color, (self.x, self.y, SIDE, SIDE)) 
+        
+        pygame.draw.circle(window, eye_color, ((self.x + SIDE // 2) - 3, (self.y + SIDE // 2) - 2), 2, 0)
+        pygame.draw.circle(window, eye_color, ((self.x + SIDE // 2) + 3, (self.y + SIDE // 2) - 2), 2, 0)
+        
     def update_position(self):
         global HEIGHT, WIDTH
 
@@ -119,7 +126,7 @@ class Snake():
         if keys[pygame.K_DOWN]:
             self.down()
 
-        self.update_position(window)
+        return self.update_position(window)
              
     @secure_function(GKL)
     def right(self):
@@ -160,7 +167,10 @@ class Snake():
         
         for i, cube in enumerate(self.body):
             cube.update_position()
-            cube.draw(window)
+            if(i == 0):
+                cube.draw_head(window)
+            else:
+                cube.draw(window)
             
             if(collision(self, cube, 16) and i != 0 and i != 1):
                 return True
@@ -172,14 +182,18 @@ class Snake():
                         self.turns.remove(turn)
 
         if(self.x < 0):
-            self.x = WIDTH
-        elif(self.x > WIDTH):
-            self.x = 0
+            #self.x = WIDTH
+            return True
+        elif(self.x >= WIDTH - SIDE):
+            #self.x = 0
+            return True
 
         if(self.y < 0):
-            self.y = HEIGHT
-        elif(self.y > HEIGHT):
-            self.y = 0
+            #self.y = HEIGHT
+            return True
+        elif(self.y >= HEIGHT - SIDE):
+            #self.y = 0
+            return True
 
         return False
             
