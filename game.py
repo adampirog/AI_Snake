@@ -1,15 +1,15 @@
 import pygame 
-from classes import Snake, Snack, collision
+from classes import Snake, Snack, collision, WIDTH, HEIGHT
 import random
 from datetime import datetime
 
-WIDTH = 600
-HEIGHT = 600
+from AI_activation import get_basic_vision, get_extended_vision
+
 SCORE = 0
 
 ENGINE = False
 
-
+    
 def spawn_snack():
     return (Snack(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50)))
 
@@ -46,6 +46,16 @@ def game_over(window, font):
                     run = False
 
 
+def report(player, snack):
+    result = get_basic_vision(player, snack)
+    #print(result)
+    
+    for i in range(4):
+        if(result[i][1] < 0):
+            print("Bang: ", i)
+            print(result)
+
+
 def main():
     global SCORE
     
@@ -65,6 +75,7 @@ def main():
     while run:
         clock.tick(30)
         window.fill((0, 0, 0))
+        report(player, snack)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -76,8 +87,8 @@ def main():
                 
         # snack eating
         if(collision(player, snack, 15)):
-            snack = spawn_snack()
             
+            snack = spawn_snack()
             size = len(player.body)
             if(size == 1):
                 SCORE += 1
@@ -90,7 +101,8 @@ def main():
         draw_score(window, font)
         pygame.display.update()
 
-    save_score('scoreboard')
+    report(player, snack)
+    #save_score('scoreboard')
     game_over(window, font)
     pygame.quit()
     quit()

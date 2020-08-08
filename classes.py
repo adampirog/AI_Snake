@@ -1,5 +1,5 @@
 import pygame
-from scipy.spatial import distance
+import numpy as np
 from time import time
 
 
@@ -13,10 +13,10 @@ VEL = 4
 
 def collision(cube1, cube2, tollerance=0):
 
-    en = (cube1.x, cube1.y)
-    ms = (cube2.x, cube2.y)
+    en = np.array([cube1.x, cube1.y])
+    ms = np.array([cube2.x, cube2.y])
 
-    dist = distance.euclidean(en, ms)
+    dist = np.linalg.norm(en - ms)
 
     if(dist <= tollerance):
         return True
@@ -101,7 +101,7 @@ class Cube:
             
 class Snake():
     
-    def __init__(self, x, y):
+    def __init__(self, x, y, go=False):
         self.x = x
         self.y = y
         
@@ -110,6 +110,9 @@ class Snake():
         
         self.body = [Cube(x, y, 0, 0)]
         self.turns = []
+        
+        if(go):
+            self.up()
   
     def move(self, window):
         keys = pygame.key.get_pressed()
@@ -125,6 +128,12 @@ class Snake():
             
         if keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_j]:
             self.down()
+            
+        if keys[pygame.K_p]:
+            self.stop(window)
+            
+        if keys[pygame.K_o]:
+            self.go(window)
 
         return self.update_position(window)
              
@@ -196,7 +205,27 @@ class Snake():
             return True
 
         return False
+    
+    def stop(self, window):
+        self.x_move = 0
+        self.y_move = 0
+        
+        self.update_position(window)
+        
+        for item in self.body:
+            item.x_move = 0
+            item.y_move = 0
             
+    def go(self, window):
+        self.x_move = 0
+        self.y_move = -VEL
+        
+        self.update_position(window)
+        
+        for item in self.body:
+            item.x_move = 0
+            item.y_move = -VEL
+
     def add_cube(self):
         
         tail = self.body[-1]
