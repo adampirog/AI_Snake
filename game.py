@@ -3,7 +3,7 @@ from classes import Snake, Snack, collision, WIDTH, HEIGHT
 import random
 from datetime import datetime
 
-from AI_activation import get_basic_vision, get_extended_vision
+from AI_sensors import get_basic_vision, get_extended_vision
 
 SCORE = 0
 
@@ -46,8 +46,10 @@ def game_over(window, font):
                     run = False
 
 
+# testing function for the AI sensors
 def report(player, snack):
     result = get_basic_vision(player, snack)
+    result = get_extended_vision(player, snack)
     #print(result)
     
     for i in range(4):
@@ -75,11 +77,11 @@ def main():
     while run:
         clock.tick(30)
         window.fill((0, 0, 0))
-        report(player, snack)
+        #report(player, snack)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                save_score('scoreboard')
+                #save_score('scoreboard.txt')
                 run = False
                 pygame.quit()
                 quit()
@@ -101,8 +103,8 @@ def main():
         draw_score(window, font)
         pygame.display.update()
 
-    report(player, snack)
-    #save_score('scoreboard')
+    #report(player, snack)
+    #save_score('scoreboard.txt')
     game_over(window, font)
     pygame.quit()
     quit()

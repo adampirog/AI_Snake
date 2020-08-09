@@ -6,7 +6,11 @@ from time import time
 TOLLERANCE = 15
 FAR = 1000
 
+# FILE CONTATING THE SENSOR FUNCTIONS
+# FURTHER USED AS AN INPUT FOR THE NEURAL NETWORK
 
+
+# simple timer decorator
 def timer(func):
     def wrapper(*args, **kwargs):
         before = time()
@@ -17,6 +21,7 @@ def timer(func):
     return wrapper
 
 
+# returns an equation of the line from the player to certain direction
 def get_equation(obj, direction):
 
     A = None
@@ -239,6 +244,7 @@ def get_extended_vision(player, snack):
     return [right_up, right_down, left_down, left_up]
 
 
+# for testing purposes
 def main():
     obj = Snack(456, 222)
     obj2 = Snack(33, 123)
