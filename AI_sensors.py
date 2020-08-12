@@ -1,10 +1,10 @@
-from classes import SIDE, HEIGHT, WIDTH
-from classes import Snack
+from classes import Snack, SIDE, HEIGHT, WIDTH
 import numpy as np
 from time import time
 
 TOLLERANCE = 15
 FAR = 1000
+DEFAULT_TAIL_DISTANCE = 20
 
 # FILE CONTATING THE SENSOR FUNCTIONS
 # FURTHER USED AS AN INPUT FOR THE NEURAL NETWORK
@@ -73,11 +73,14 @@ def get_basic_vision(player, snack):
         up.append(FAR)
         
     #body
-    for i, cube in enumerate(player.body):
-        if(i > 1):
-            if((abs(player.x - cube.x) <= TOLLERANCE) and (cube.y < player.y)):
-                up.append(abs(player.y - cube.y) - SIDE)
-                break
+    if(player.x_move == 0 and player.y_move > 0):
+        up.append(DEFAULT_TAIL_DISTANCE)
+    else:
+        for i, cube in enumerate(player.body):
+            if(i > 1):
+                if((abs(player.x - cube.x) <= TOLLERANCE) and (cube.y < player.y)):
+                    up.append(abs(player.y - cube.y) - SIDE)
+                    break
     if (len(up) == 2):
         up.append(FAR)
       
@@ -94,11 +97,14 @@ def get_basic_vision(player, snack):
         down.append(FAR)
         
     #body
-    for i, cube in enumerate(player.body):
-        if(i > 1):
-            if((abs(player.x - cube.x) <= TOLLERANCE) and (cube.y > player.y)):
-                down.append(abs(player.y - cube.y) - SIDE)
-                break
+    if(player.x_move == 0 and player.y_move < 0):
+        down.append(DEFAULT_TAIL_DISTANCE)
+    else:
+        for i, cube in enumerate(player.body):
+            if(i > 1):
+                if((abs(player.x - cube.x) <= TOLLERANCE) and (cube.y > player.y)):
+                    down.append(abs(player.y - cube.y) - SIDE)
+                    break
     if (len(down) == 2):
         down.append(FAR)
         
@@ -114,11 +120,14 @@ def get_basic_vision(player, snack):
         left.append(FAR)
         
     #body
-    for i, cube in enumerate(player.body):
-        if(i > 1):
-            if((abs(player.y - cube.y) <= TOLLERANCE) and (cube.x < player.x)):
-                left.append(abs(player.x - cube.x) - SIDE)
-                break
+    if(player.y_move == 0 and player.x_move > 0):
+        left.append(DEFAULT_TAIL_DISTANCE)
+    else:
+        for i, cube in enumerate(player.body):
+            if(i > 1):
+                if((abs(player.y - cube.y) <= TOLLERANCE) and (cube.x < player.x)):
+                    left.append(abs(player.x - cube.x) - SIDE)
+                    break
     if (len(left) == 2):
         left.append(FAR)
         
@@ -134,11 +143,14 @@ def get_basic_vision(player, snack):
         right.append(FAR)
         
     #body
-    for i, cube in enumerate(player.body):
-        if(i > 1):
-            if((abs(player.y - cube.y) <= TOLLERANCE) and (cube.x > player.x)):
-                right.append(abs(player.x - cube.x) - SIDE)
-                break
+    if(player.y_move == 0 and player.x_move < 0):
+        right.append(DEFAULT_TAIL_DISTANCE)
+    else:
+        for i, cube in enumerate(player.body):
+            if(i > 1):
+                if((abs(player.y - cube.y) <= TOLLERANCE) and (cube.x > player.x)):
+                    right.append(abs(player.x - cube.x) - SIDE)
+                    break
     if (len(right) == 2):
         right.append(FAR)
         
@@ -158,7 +170,7 @@ def get_extended_vision(player, snack):
     right_up.append(distance_from_object(player, corner) - SIDE)
     
     #snack
-    if((distance_from_line(player, eq) <= TOLLERANCE) and (snack.y < player.y)):
+    if((distance_from_line(snack, eq) <= TOLLERANCE) and (snack.y > player.y)):
         right_up.append(distance_from_object(player, snack) - SIDE)
     else:
         right_up.append(FAR)
@@ -166,7 +178,7 @@ def get_extended_vision(player, snack):
     #body
     for i, cube in enumerate(player.body):
         if(i > 1):
-            if((distance_from_line(cube, eq) <= TOLLERANCE) and (cube.y < player.y)):
+            if((distance_from_line(cube, eq) <= TOLLERANCE) and (cube.y > player.y)):
                 right_up.append(distance_from_object(player, cube) - SIDE)
                 break
     if (len(right_up) == 2):
@@ -181,7 +193,7 @@ def get_extended_vision(player, snack):
     right_down.append(distance_from_object(player, corner) - SIDE)
     
     #snack
-    if((distance_from_line(player, eq) <= TOLLERANCE) and (snack.y > player.y)):
+    if((distance_from_line(snack, eq) <= TOLLERANCE) and (snack.y < player.y)):
         right_down.append(distance_from_object(player, snack) - SIDE)
     else:
         right_down.append(FAR)
@@ -189,7 +201,7 @@ def get_extended_vision(player, snack):
     #body
     for i, cube in enumerate(player.body):
         if(i > 1):
-            if((distance_from_line(player, eq) <= TOLLERANCE) and (cube.y > player.y)):
+            if((distance_from_line(cube, eq) <= TOLLERANCE) and (cube.y < player.y)):
                 right_down.append(distance_from_object(player, cube) - SIDE)
                 break
     if (len(right_down) == 2):
@@ -204,7 +216,7 @@ def get_extended_vision(player, snack):
     left_down.append(distance_from_object(player, corner) - SIDE)
     
     #snack
-    if((distance_from_line(player, eq) <= TOLLERANCE) and (snack.y > player.y)):
+    if((distance_from_line(snack, eq) <= TOLLERANCE) and (snack.y < player.y)):
         left_down.append(distance_from_object(player, snack) - SIDE)
     else:
         left_down.append(FAR)
@@ -212,7 +224,7 @@ def get_extended_vision(player, snack):
     #body
     for i, cube in enumerate(player.body):
         if(i > 1):
-            if((distance_from_line(cube, eq) <= TOLLERANCE) and (cube.y > player.y)):
+            if((distance_from_line(cube, eq) <= TOLLERANCE) and (cube.y < player.y)):
                 left_down.append(distance_from_object(player, cube) - SIDE)
                 break
     if (len(left_down) == 2):
@@ -227,7 +239,7 @@ def get_extended_vision(player, snack):
     left_up.append(distance_from_object(player, corner) - SIDE)
     
     #snack
-    if((distance_from_line(player, eq) <= TOLLERANCE) and (snack.y < player.y)):
+    if((distance_from_line(snack, eq) <= TOLLERANCE) and (snack.y > player.y)):
         left_up.append(distance_from_object(player, snack) - SIDE)
     else:
         left_up.append(FAR)
@@ -235,7 +247,7 @@ def get_extended_vision(player, snack):
     #body
     for i, cube in enumerate(player.body):
         if(i > 1):
-            if((distance_from_line(cube, eq) <= TOLLERANCE) and (cube.y < player.y)):
+            if((distance_from_line(cube, eq) <= TOLLERANCE) and (cube.y > player.y)):
                 left_up.append(distance_from_object(player, cube) - SIDE)
                 break
     if (len(left_up) == 2):

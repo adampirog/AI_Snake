@@ -3,7 +3,7 @@ from classes import Snake, Snack, collision, WIDTH, HEIGHT
 import random
 from datetime import datetime
 
-from AI_sensors import get_basic_vision, get_extended_vision
+from AI_sensors import get_equation, get_basic_vision, get_extended_vision, FAR
 
 SCORE = 0
 
@@ -29,6 +29,78 @@ def save_score(filename):
                 file.write(",    HUMAN")
 
 
+def get_vis_color(vis_data, direction_index):
+    GREEN = (0, 255, 0)
+    WHITE = (255, 255, 255)
+    RED = (255, 0, 0)
+
+    snack = vis_data[direction_index][1]
+    tail = vis_data[direction_index][2]
+
+    if tail == FAR and snack == FAR:
+        return WHITE
+
+    if tail == FAR:
+        return GREEN
+
+    if snack == FAR:
+        return RED
+
+    if snack < tail:
+        return RED
+    else:
+        return RED
+
+
+def draw_vision(window, player, snack):
+    #directions2 = ['NE', 'SE', 'SW', 'NW']
+    # NW,SW,SE,NE
+
+    extended_data = get_extended_vision(player, snack)
+    basic_data = get_basic_vision(player, snack)
+    start_pos = (round(player.x), round(player.y))
+    
+    color = (255, 255, 255)
+
+    #N
+    color = get_vis_color(basic_data, 0)
+    pygame.draw.line(window, color, start_pos, (round(player.x), 0), 2)
+    #S
+    color = get_vis_color(basic_data, 1)
+    pygame.draw.line(window, color, start_pos, (round(player.x), 600), 2)
+
+    #E
+    color = get_vis_color(basic_data, 2)
+    pygame.draw.line(window, color, start_pos, (600, round(player.y)), 2)
+    #W
+    color = get_vis_color(basic_data, 3)
+    pygame.draw.line(window, color, start_pos, (0, round(player.y)), 2)
+
+    eq = get_equation(player, "NE")
+    end_x = 600
+    end_y = round(eq[0] * end_x + eq[1])
+    color = get_vis_color(extended_data, 0)
+    pygame.draw.line(window, color, start_pos, (end_x, end_y), 1)
+
+    eq = get_equation(player, "SE")
+    end_x = 600
+    end_y = round(eq[0] * end_x + eq[1])
+    color = get_vis_color(extended_data, 1)
+    pygame.draw.line(window, color, start_pos, (end_x, end_y), 1)
+
+    eq = get_equation(player, "SW")
+    end_x = -1
+    end_y = round(eq[0] * end_x + eq[1])
+    color = get_vis_color(extended_data, 2)
+    pygame.draw.line(window, color, start_pos, (end_x, end_y), 1)
+
+    eq = get_equation(player, "NW")
+    end_x = -1
+    end_y = round(eq[0] * end_x + eq[1])
+    color = get_vis_color(extended_data, 3)
+    pygame.draw.line(window, color, start_pos, (end_x, end_y), 1)
+
+
 def game_over(window, font):
      
     run = True
@@ -49,8 +121,8 @@ def game_over(window, font):
 # testing function for the AI sensors
 def report(player, snack):
     result = get_basic_vision(player, snack)
-    result = get_extended_vision(player, snack)
-    #print(result)
+    #result = get_extended_vision(player, snack)
+    print(result)
     
     for i in range(4):
         if(result[i][1] < 0):
@@ -66,7 +138,7 @@ def main():
     pygame.font.init()
     
     snack = spawn_snack()
-    player = Snake(WIDTH // 2, HEIGHT // 2)
+    player = Snake(WIDTH // 2, HEIGHT // 2, True)
 
     window = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Snake")
@@ -77,7 +149,8 @@ def main():
     while run:
         clock.tick(30)
         window.fill((0, 0, 0))
-        #report(player, snack)
+        report(player, snack)
+        draw_vision(window, player, snack)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

@@ -62,12 +62,10 @@ class Cube:
         self.x = x
         self.y = y
         self.color = color
+
         self.x_move = x_move
         self.y_move = y_move
-        
-        self.movX = 0
-        self.movY = 0
-              
+           
     def draw(self, window):
         pygame.draw.rect(window, self.color, (self.x, self.y, SIDE, SIDE)) 
         
@@ -101,7 +99,7 @@ class Cube:
             
 class Snake():
     
-    def __init__(self, x, y, go=False):
+    def __init__(self, x, y, setup=False):
         self.x = x
         self.y = y
         
@@ -111,7 +109,8 @@ class Snake():
         self.body = [Cube(x, y, 0, 0)]
         self.turns = []
         
-        if(go):
+        if(setup):
+
             self.up()
   
     def move(self, window):
