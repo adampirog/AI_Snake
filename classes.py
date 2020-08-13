@@ -110,7 +110,6 @@ class Snake():
         self.turns = []
         
         if(setup):
-
             self.up()
   
     def move(self, window):
@@ -138,32 +137,40 @@ class Snake():
              
     @secure_function(GKL)
     def right(self):
+        
         if(self.x_move != 0 and self.y_move == 0):
             return
+        #print("Called right")
         self.x_move = VEL
         self.y_move = 0
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
         
     @secure_function(GKL)
     def left(self):
+        
         if(self.x_move != 0 and self.y_move == 0):
             return
+        #print("Called left")
         self.x_move = -VEL
         self.y_move = 0
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
        
     @secure_function(GKL)    
     def up(self):
+        
         if(self.x_move == 0 and self.y_move != 0):
             return
+        #print("Called up")
         self.x_move = 0
         self.y_move = -VEL
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))
     
     @secure_function(GKL)
     def down(self):
+        
         if(self.x_move == 0 and self.y_move != 0):
             return
+        #print("Called down")
         self.x_move = 0
         self.y_move = VEL
         self.turns.append(Turn(self.x, self.y, self.x_move, self.y_move))

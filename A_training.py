@@ -1,14 +1,23 @@
-import csv
 import pygame 
+from classes import Snake, Snack, collision, WIDTH, HEIGHT
 import random
 from datetime import datetime
 
+import os
+import neat
+import joblib
+from time import time
 from AI_sensors import get_equation, get_basic_vision, get_extended_vision, FAR
-from classes import Snake, Snack, collision, WIDTH, HEIGHT
 
 SCORE = 0
 
 ENGINE = False
+START_TIME = 0
+END_TIME = 300
+
+GENERATION = 0
+
+SPECIMEN = 0
 
     
 def spawn_snack():
@@ -18,30 +27,21 @@ def spawn_snack():
 def draw_score(window, font):
     score_label = font.render("Score: " + str(SCORE), 1, (255, 255, 255))
     window.blit(score_label, (WIDTH - score_label.get_width() - 15, 10))
+   
+ 
+def draw_progress(window, font, generation, specimen):
+    score_label = font.render("Generation: " + str(generation) + " Specimen: " + str(specimen), 1, (255, 255, 255))
+    window.blit(score_label, (3, 10))
 
 
 def save_score(filename):
-    
-    max_score = 0
-    text = "HUMAN"
-    if (ENGINE):
-        text = "ENGINE"
-        
-    with open(filename, 'r') as file:
-        reader = csv.reader(file, skipinitialspace=True)
-        for row in reader:
-            if(row[2] == text):
-                scr = int(row[1][7:])
-                if(scr > max_score):
-                    max_score = scr
-
-    if(SCORE > max_score):
+    if(SCORE > 0):
         with open(filename, 'a') as file:
-            file.write("\n" + datetime.now().strftime("%d-%m-%Y %H:%M:%S") + ", SCORE: " + str(SCORE))
+            file.write("\n" + datetime.now().strftime("%d-%m-%Y %H:%M:%S") + ",   SCORE: " + str(SCORE))
             if(ENGINE):
-                file.write(", ENGINE")
+                file.write(",    ENGINE")
             else:
-                file.write(", HUMAN")
+                file.write(",    HUMAN")
 
 
 def get_vis_color(vis_data, direction_index):
@@ -145,55 +145,111 @@ def report(player, snack):
             print(result)
 
 
-def main():
-    global SCORE
+def evaluate(genomes, config):
+    global GENERATION, SPECIMEN
     
-    run = True
     pygame.init()  
     pygame.font.init()
     
-    snack = spawn_snack()
-    player = Snake(WIDTH // 2, HEIGHT // 2, False)
-
     window = pygame.display.set_mode((WIDTH, HEIGHT))
+    font = pygame.font.Font('freesansbold.ttf', 30)
+    font_small = pygame.font.Font('freesansbold.ttf', 15)
     pygame.display.set_caption("Snake")
     
-    font = pygame.font.Font('freesansbold.ttf', 40)
     clock = pygame.time.Clock()
     
-    while run:
-        clock.tick(30)
-        window.fill((0, 0, 0))
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                save_score('scoreboard.txt')
-                run = False
-                pygame.quit()
-                quit()
-                break
+    GENERATION += 1
+    SPECIMEN = 0
+    
+    for _, genome in genomes:
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        genome.fitness = 0
+        
+        is_alive = True
+        SPECIMEN += 1
+        
+        snack = spawn_snack()
+        player = Snake(WIDTH // 2, HEIGHT // 2, True)
+        framerate = 200
+        
+        while(is_alive):
+            clock.tick(framerate)
+            window.fill((0, 0, 0))
+            #draw_vision(window, player, snack)
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                    break
+            
+            # fitness per frame
+            genome.fitness += (1 / (framerate * 1))
+                                
+            # snack eating
+            if(collision(player, snack, 15)):
+                snack = spawn_snack()
+                size = len(player.body)
+                if(size == 1):
+                    genome.fitness += 1
+                genome.fitness += (size - 1)
                 
-        # snack eating
-        if(collision(player, snack, 15)):
-            
-            snack = spawn_snack()
-            size = len(player.body)
-            if(size == 1):
-                SCORE += 1
-            SCORE += (size - 1)
-            
-            player.add_cube()
+                player.add_cube()
 
-        run = not player.move(window)
-        snack.draw(window)
-        draw_score(window, font)
-        pygame.display.update()
+            #moving the snake
+            vision_sensors = get_basic_vision(player, snack) + get_extended_vision(player, snack)
+            #print(vision_sensors[0])
+            
+            input_list = []
+            for x in range(8):
+                for y in range(3):
+                    input_list.append(vision_sensors[x][y])
+            
+            output = net.activate(input_list)
+            index = output.index(max(output))
+            #print(output)
+            
+            if index == 0: 
+                player.up()
+            elif index == 1: 
+                player.down()
+            if index == 2: 
+                player.right()
+            if index == 3: 
+                player.left()
+                
+            is_alive = not player.update_position(window)
+                
+            snack.draw(window)
+            draw_score(window, font)
+            draw_progress(window, font_small, GENERATION, SPECIMEN)
+            pygame.display.update()
 
-    save_score('scoreboard.txt')
-    draw_game_over(window, font)
-    pygame.quit()
-    quit()
+
+def run(config_file):
+    global START_TIME
+    
+    START_TIME = time()
+    
+    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                                neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                                config_file)
+
+    p = neat.Population(config)
+
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+
+    winner = p.run(evaluate, 50)
+    
+    joblib.dump(winner, "Specimen001")
+    print('\nBest genome:\n{!s}'.format(winner))
+    print("Training time:", time() - START_TIME)
 
 
 if __name__ == "__main__":
-    main()
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, "config")
+    run(config_path)
+    
