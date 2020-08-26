@@ -164,6 +164,7 @@ def main():
     while run:
         clock.tick(30)
         window.fill((0, 0, 0))
+        draw_vision(window, player, snack)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
